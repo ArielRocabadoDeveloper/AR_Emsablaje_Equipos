@@ -1,0 +1,11 @@
+Model Information:
+* title:	NZXT h500i case
+* source:	https://sketchfab.com/3d-models/nzxt-h500i-case-a6b1c621905b451f8bc3e4ec7f1464b2
+* author:	Architect Enterprises (https://sketchfab.com/nfsmaster823)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "NZXT h500i case" (https://sketchfab.com/3d-models/nzxt-h500i-case-a6b1c621905b451f8bc3e4ec7f1464b2) by Architect Enterprises (https://sketchfab.com/nfsmaster823) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

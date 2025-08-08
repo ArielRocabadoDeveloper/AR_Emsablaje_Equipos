@@ -1,0 +1,2 @@
+#instalar aframe
+npm install aframe

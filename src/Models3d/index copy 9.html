@@ -1,0 +1,1332 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Taller de Computadoras - A-Frame</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-event-set-component @6.1.0/dist/aframe-event-set-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-draggable-component @0.7.0/dist/aframe-draggable-component.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        .hud-message {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            max-width: 300px;
+            z-index: 9999;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+        }
+        .hud-message.show {
+            transform: translateX(0);
+        }
+        .hud-message.success {
+            border-left: 4px solid #00ff00;
+        }
+        .hud-message.error {
+            border-left: 4px solid #ff0000;
+        }
+        .instructions-panel {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            max-width: 300px;
+            z-index: 9999;
+            border-left: 4px solid #1c71d8;
+        }
+        .instructions-panel h3 {
+            margin: 0 0 10px 0;
+            color: #1c71d8;
+            font-size: 16px;
+        }
+        .instructions-panel ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .instructions-panel li {
+            margin-bottom: 5px;
+        }
+        .score {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .score-value {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        .current-component {
+            position: fixed;
+            left: 20px;
+            top: 200px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            max-width: 300px;
+            z-index: 9999;
+            border-left: 4px solid #ffd700;
+        }
+        .current-component h3 {
+            margin: 0 0 10px 0;
+            color: #ffd700;
+            font-size: 16px;
+        }
+        .step {
+            opacity: 0.5;
+        }
+        .step.active {
+            opacity: 1;
+            color: #ffd700;
+        }
+        .step.completed {
+            opacity: 0.7;
+            color: #00ff00;
+        }
+        .lives {
+            position: fixed;
+            right: 20px;
+            top: 60px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            z-index: 9999;
+            border-left: 4px solid #ff0000;
+        }
+        .lives h3 {
+            margin: 0 0 10px 0;
+            color: #ff0000;
+            font-size: 16px;
+        }
+        .lives-container {
+            display: flex;
+            gap: 10px;
+        }
+        .life {
+            width: 20px;
+            height: 20px;
+            background-color: #ff0000;
+            border-radius: 50%;
+        }
+        .life.lost {
+            background-color: #333;
+        }
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            z-index: 10000;
+            display: none;
+        }
+        .game-over h2 {
+            color: #ff0000;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+        }
+        .game-over p {
+            margin: 0 0 20px 0;
+            font-size: 18px;
+        }
+        .restart-button {
+            background-color: #ff0000;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .restart-button:hover {
+            background-color: #cc0000;
+        }
+        .achievements {
+            position: fixed;
+            right: 20px;
+            top: 120px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            z-index: 9999;
+            border-left: 4px solid #ffd700;
+        }
+        .achievements h3 {
+            margin: 0 0 10px 0;
+            color: #ffd700;
+            font-size: 16px;
+        }
+        .achievement {
+            margin-bottom: 5px;
+            opacity: 0.5;
+        }
+        .achievement.unlocked {
+            opacity: 1;
+            color: #ffd700;
+        }
+        .quiz-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            z-index: 10000;
+            display: none;
+            max-width: 500px;
+        }
+        .quiz-modal h2 {
+            color: #ffd700;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+        }
+        .quiz-question {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .quiz-option {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .quiz-option:hover {
+            background-color: #444;
+        }
+        .quiz-option.correct {
+            background-color: #00ff00;
+        }
+        .quiz-option.incorrect {
+            background-color: #ff0000;
+        }
+        .quiz-progress {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #ffd700;
+        }
+        .main-menu {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            z-index: 10000;
+            min-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .main-menu h1 {
+            color: #ffd700;
+            font-size: 32px;
+            margin: 0 0 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .main-menu p {
+            margin: 0 0 30px 0;
+            font-size: 18px;
+            color: #ccc;
+        }
+        .menu-button {
+            background-color: #1c71d8;
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+            min-width: 200px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .menu-button:hover {
+            background-color: #1557b0;
+            transform: scale(1.05);
+        }
+        .menu-button.restart {
+            background-color: #ffd700;
+            color: #000;
+        }
+        .menu-button.restart:hover {
+            background-color: #ffed4a;
+        }
+        .menu-stats {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .menu-stats p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        .menu-stats .highlight {
+            color: #ffd700;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <a-scene>
+        <!-- Cargar assets previamente -->
+        <a-assets>
+            <a-asset-item id="taller-model" src="Models3d/oficina/scene.gltf"></a-asset-item>
+            <a-asset-item id="escritorio-model"
+                src="Models3d/mesa_de_jantar_code_augusta_doimo_agave_casa/scene.gltf"></a-asset-item>
+
+            <a-asset-item id="pc-model" src="Models3d/pc_-_computer_graphics/scene.gltf"></a-asset-item>
+
+            <a-asset-item id="case-model" src="Models3d/nzxt_h500_pc_case/scene.gltf"></a-asset-item>
+
+            <a-asset-item id="case1-model" src="Models3d/pc_gamer_animation/scene.gltf"></a-asset-item>
+
+            <a-asset-item id="background-model"
+                src="Models3d/starry_night_sky_hdri_background_photosphere.glb"></a-asset-item>
+
+            <a-asset-item id="pizzara-model" src="Models3d/track_assets_pizarra.glb"></a-asset-item>
+
+            <a-asset-item id="cpu-model" src="Models3d/computer_processor/scene.gltf"></a-asset-item>
+            <a-asset-item id="motherboard-model"
+                src="Models3d/asus_strix_b-550-f_gaming_motherboard_realistic/scene.gltf"></a-asset-item>
+            <a-asset-item id="ram-model" src="Models3d/kingston_hyperx_fury_black_ram_module.glb"></a-asset-item>
+            <a-asset-item id="tarjetaGrafica-model" src="Models3d/nvidia_geforce_rtx_3090.glb"></a-asset-item>
+            <a-asset-item id="discoDuros-model" src="Models3d/discos_duros.glb"></a-asset-item>
+            <a-asset-item id="discoDuro-model" src="Models3d/wd_green_1tb_hard_disk_hdd.glb"></a-asset-item>
+            <a-asset-item id="fuentePoder-model" src="Models3d/power_supply_-_basic.glb"></a-asset-item>
+            <a-asset-item id="VentiladorProcesador-model" src="Models3d/pc_cooler_2.glb"></a-asset-item>
+
+
+
+
+
+        </a-assets>
+
+        <!-- Luz ambiental -->
+        <a-light type="ambient" color="#ffffff" intensity="0.7"></a-light>
+
+        <!-- Luz direccional -->
+        <a-light type="directional" color="#ffffff" position="-1.448 2.352 6.553" intensity="0.8"></a-light>
+
+        <!-- Cursor personalizado estilo "mouse" -->
+        <a-entity id="player" camera look-controls wasd-controls position="2.000 1.600 3.095"
+            rotation="0.030 -45.141 0.000">
+            <a-entity id="cursor" cursor="rayOrigin: mouse; fuse: false;" position="0 0 -1"
+                geometry="primitive: ring; radiusInner: 0.015; radiusOuter: 0.025"
+                material="color: #000; opacity: 0.7;">
+                <!-- Efecto parpadeo suave -->
+                <a-animation attribute="scale" from="1 1 1" to="1.2 1.2 1.2" dur="150" direction="alternate"
+                    repeat="indefinite"></a-animation>
+            </a-entity>
+        </a-entity>
+
+
+        <!-- Modelo del taller -->
+        <a-entity gltf-model="#taller-model" position="-10 3.5 -14" scale="1 1 1" rotation="0 0 0">
+        </a-entity>
+        <!-- Modelo del escritorio -->
+        <a-entity gltf-model="#escritorio-model" position="3.522 -0.191 2.579" scale="1 1 1"
+            rotation="-0.465 -89.964  -0.030">
+        </a-entity>
+
+        <!-- Escritorio 2 -->
+        <a-entity id="escritorio2" gltf-model="#escritorio-model" position="3.546 -0.203 1.480" scale="1.6 1 1"
+            rotation="-0.465 179.791 -0.030">
+        </a-entity>
+
+        <!-- Escritorio 3 -->
+        <a-entity gltf-model="#escritorio-model" position="3.555 -0.201 5.478" scale="1 1 1"
+            rotation="-0.465 178.283  -0.030">
+        </a-entity>
+
+        <!-- Escritorio 3 -->
+        <a-entity gltf-model="#escritorio-model" position="2.612 -0.201 9.751" scale="2 1 1"
+            rotation="-0.465 178.283  -0.030">
+        </a-entity>
+
+        <!-- Escritorio 4 -->
+        <a-entity gltf-model="#escritorio-model" position="2.612 -0.201 -2.233" scale="2 1 1"
+            rotation="-0.465 178.283  -0.030">
+        </a-entity>
+
+        <!-- PC 1 -->
+        <a-entity gltf-model="#pc-model" position="2.515 0.489 10.586" scale="3.860 3.250 3.591"
+            rotation="-0.465 178.283 -0.030">
+        </a-entity>
+
+        <!-- Case -->
+        <a-entity gltf-model="#case-model" position="4.271 1.290 4.116" scale="0.195 0.153 0.178"
+            rotation="-0.465 -91.027 -0.030">
+            <!-- Box donde se colocará el procesador -->
+            <a-box id="case-cpu-slot" color="transparent" depth="0.01" width="0.3" height="0.2"
+                position="-1.439 1.610 -0.593" scale="3.720 6.380 2.120" visible="true" opacity="0.4"
+                material="color: #FFD700; transparent: true;">
+            </a-box>
+            <!-- Box donde se colocará el placaMadre -->
+            <a-box id="case-motherboard-slot" color="transparent" depth="0.01" width="0.3" height="0.2"
+                position="-1.235 0.893 -1.338" scale="14.025 27.572 2.120" visible="true" opacity="0.4"
+                material="color: #ff7800; transparent: true;">
+            </a-box>
+            <!-- Box donde se colocará el Cooler -->
+            <a-box id="case-ventilador-slot" color="transparent" depth="0.01" width="0.3" height="0.2"
+                position="-1.424 1.198 -0.257" scale="3.720 6.380 2.120" visible="true" opacity="0.4"
+                material="color: #ed333b; transparent: true;">
+            </a-box>
+            <!-- Box donde se colocará el ram -->
+            <a-box id="case-ram-slot" color="transparent" depth="0.01" width="0.3" height="0.2"
+                position="-0.147 1.611 -0.551" scale="3.720 13.733 2.120" visible="true" opacity="0.4"
+                material="color: #9141ac; transparent: true;">
+            </a-box>
+            <!-- Box donde se colocará el discoDuro -->
+            <a-box id="case-discoDuro-slot" color="transparent" depth="0.01" width="0.3" height="0.2"
+                position="-1.719 -1.202 -0.511" scale="3.720 6.380 2.120" visible="true" opacity="0.4"
+                material="color: #2ec27e; transparent: true;">
+            </a-box>
+            <!-- Box donde se colocará el tarjetaGrafica -->
+            <a-box id="case-tarjetaGrafica-slot" color="transparent" depth="0.01" width="0.3" height="0.2"
+                position="-1.975 -0.454 0.856" scale="3.720 6.380 2.120" visible="true" opacity="0.4"
+                material="color: #1c71d8; transparent: true;">
+            </a-box>
+        </a-entity>
+
+        <!-- PC -->
+        <a-entity gltf-model="#case1-model" position="-0.279 0.457 10.145" scale="1.594 1.602 1.553"
+            rotation="-0.071 88.874 -0.461">
+        </a-entity>
+
+        <!-- Fondo -->
+        <a-entity gltf-model="#background-model"> </a-entity>
+
+        <!-- Pizarra 1-->
+        <a-entity id="pizarra" gltf-model="#pizzara-model" position="1.250 1.628 1.646" scale="0.740 0.640 0.031"
+            rotation="0 0 0">
+            <!-- Capa interactiva -->
+            <a-box color="transparent" depth="0.01" visible="false"></a-box></a-entity>
+        <!-- Cpu -->
+        <!-- Boton 1 -->
+        <a-entity id="cpu" gltf-model="#cpu-model" position="-0.400 2.103 1.716" scale="0.003 0.003 0.003"
+            rotation="90 180 180">
+            <!-- Capa interactiva -->
+            <a-box color="transparent" depth="0.01" visible="false"></a-box>
+        </a-entity>
+        <!-- Motherboard -->
+        <!-- Boton 2 -->
+        <a-entity id="motherboard" gltf-model="#motherboard-model" position="0.348 1.810 1.450"
+            scale="0.025 0.020 0.025" rotation="90 180 180">
+            <!-- Capa interactiva -->
+            <a-box color="transparent" depth="0.01" visible="false"></a-box>
+        </a-entity>
+
+        <!-- Ram -->
+        <!-- Boton 3 -->
+        <a-entity id="ram" gltf-model="#ram-model" position="1.033 2.085 1.674" scale="0.025 -0.280 0.170"
+            rotation="90 90 180">
+            <!-- Capa interactiva -->
+            <a-box color="transparent" depth="0.01" visible="false"></a-box>
+        </a-entity>
+
+        <!-- Tarjeta Grafica -->
+        <!-- Boton 5 -->
+        <a-entity id="tarjetaGrafica" gltf-model="#tarjetaGrafica-model" position="2.267 1.798 1.808"
+            scale="0.360 0.251 0.170" rotation="-180 180 180">
+            <!-- Capa interactiva -->
+            <a-box color="transparent" depth="0.01" visible="false"></a-box>
+        </a-entity>
+
+        <!-- Disco Duro -->
+        <!-- Boton 6 -->
+        <a-entity id="discoDuro" gltf-model="#discoDuro-model" position="-0.347 1.294 1.808" scale="0.116 0.126 0.114"
+            rotation="90 180 180">
+            <!-- Capa interactiva -->
+            <a-box color="transparent" depth="0.01" visible="false"></a-box>
+        </a-entity>
+
+
+        <!-- Fuente Poder -->
+        <!-- Boton 7 -->
+        <a-entity id="fuentePoder" gltf-model="#fuentePoder-model" position="0.268 1.246 1.808"
+            scale="0.158 0.126 0.149" rotation="90 180 180">
+            <!-- Capa interactiva -->
+            <a-box color="transparent" depth="0.01" visible="false"></a-box>
+        </a-entity>
+
+        <!-- Fuente Poder -->
+        <!-- Boton 8 -->
+        <a-entity id="VentiladorProcesador" gltf-model="#VentiladorProcesador-model" position="1.149 1.334 1.808"
+            scale="0.001 0.001 0.001" rotation="180 180 180">
+            <!-- Capa interactiva -->
+            <a-box color="transparent" depth="0.01" visible="false"></a-box>
+        </a-entity>
+
+
+        <!-- Disco Duros -->
+        <a-entity id="discoDuros" gltf-model="#discoDuros-model" position="-2.008 0.563 10.145"
+            scale="0.117 0.139 0.114" rotation="-180 180 180">
+            <!-- Capa interactiva -->
+            <a-box color="transparent" depth="0.01" visible="false"></a-box>
+        </a-entity>
+
+
+    </a-scene>
+    <script>
+        let componenteSeleccionado = null;
+        let boxSeleccionado = null;
+        let puntuacion = 0;
+        let pasoActual = 0;
+        let vidas = 3;
+        let logrosDesbloqueados = new Set();
+        let preguntaMostrada = false;
+
+        const pasosInstalacion = [
+            { id: 'motherboard', nombre: 'Placa Madre', descripcion: 'Primero instala la placa madre' },
+            { id: 'cpu', nombre: 'Procesador', descripcion: 'Luego instala el procesador' },
+            { id: 'VentiladorProcesador', nombre: 'Ventilador', descripcion: 'Coloca el ventilador del procesador' },
+            { id: 'ram', nombre: 'Memoria RAM', descripcion: 'Instala la memoria RAM' },
+            { id: 'tarjetaGrafica', nombre: 'Tarjeta Gráfica', descripcion: 'Coloca la tarjeta gráfica' },
+            { id: 'discoDuro', nombre: 'Disco Duro', descripcion: 'Finalmente instala el disco duro' }
+        ];
+
+        const logros = [
+            { id: 'primer_componente', nombre: 'Primer Componente', descripcion: 'Instala tu primer componente' },
+            { id: 'todos_componentes', nombre: 'Constructor Experto', descripcion: 'Instala todos los componentes' },
+            { id: 'sin_errores', nombre: 'Perfeccionista', descripcion: 'Completa la instalación sin errores' },
+            { id: 'quiz_maestro', nombre: 'Maestro del Quiz', descripcion: 'Responde correctamente 5 preguntas' }
+        ];
+
+        const preguntas = [
+            {
+                pregunta: "¿Cuál es el componente principal que conecta todos los demás?",
+                opciones: ["Procesador", "Placa Madre", "Memoria RAM", "Fuente de Poder"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Qué componente es responsable de procesar los datos?",
+                opciones: ["Memoria RAM", "Procesador", "Disco Duro", "Tarjeta Gráfica"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Cuál es la función principal de la memoria RAM?",
+                opciones: ["Almacenamiento permanente", "Procesamiento de datos", "Almacenamiento temporal", "Refrigeración"],
+                respuesta: 2
+            },
+            {
+                pregunta: "¿Qué componente es esencial para la refrigeración del CPU?",
+                opciones: ["Disco Duro", "Ventilador", "Memoria RAM", "Fuente de Poder"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Cuál es la función de la tarjeta gráfica?",
+                opciones: ["Procesar datos", "Almacenar información", "Mostrar imágenes", "Proporcionar energía"],
+                respuesta: 2
+            },
+            {
+                pregunta: "¿Qué componente almacena los datos permanentemente?",
+                opciones: ["Memoria RAM", "Procesador", "Disco Duro", "Tarjeta Gráfica"],
+                respuesta: 2
+            },
+            {
+                pregunta: "¿Cuál es la función de la fuente de poder?",
+                opciones: ["Procesar datos", "Almacenar información", "Proporcionar energía", "Mostrar imágenes"],
+                respuesta: 2
+            },
+            {
+                pregunta: "¿Qué componente es necesario para conectar la computadora a internet?",
+                opciones: ["Tarjeta de Red", "Procesador", "Memoria RAM", "Disco Duro"],
+                respuesta: 0
+            },
+            {
+                pregunta: "¿Cuál es el componente que controla la velocidad del procesador?",
+                opciones: ["Memoria RAM", "Disco Duro", "Tarjeta Gráfica", "Placa Madre"],
+                respuesta: 3
+            },
+            {
+                pregunta: "¿Qué componente es responsable de la calidad del sonido?",
+                opciones: ["Tarjeta de Sonido", "Procesador", "Memoria RAM", "Disco Duro"],
+                respuesta: 0
+            },
+            {
+                pregunta: "¿Cuál es la función del BIOS?",
+                opciones: ["Procesar datos", "Iniciar el sistema", "Almacenar información", "Mostrar imágenes"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Qué componente es necesario para conectar dispositivos USB?",
+                opciones: ["Procesador", "Memoria RAM", "Controlador USB", "Disco Duro"],
+                respuesta: 2
+            },
+            {
+                pregunta: "¿Cuál es la función del chipset?",
+                opciones: ["Procesar datos", "Controlar el flujo de datos", "Almacenar información", "Mostrar imágenes"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Qué componente es necesario para la refrigeración general del sistema?",
+                opciones: ["Ventiladores de Case", "Procesador", "Memoria RAM", "Disco Duro"],
+                respuesta: 0
+            },
+            {
+                pregunta: "¿Cuál es la función de la memoria caché?",
+                opciones: ["Almacenamiento permanente", "Almacenamiento temporal rápido", "Procesamiento de datos", "Refrigeración"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Qué componente es necesario para la conexión WiFi?",
+                opciones: ["Tarjeta WiFi", "Procesador", "Memoria RAM", "Disco Duro"],
+                respuesta: 0
+            },
+            {
+                pregunta: "¿Cuál es la función del reloj del sistema?",
+                opciones: ["Procesar datos", "Sincronizar componentes", "Almacenar información", "Mostrar imágenes"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Qué componente es necesario para la conexión Bluetooth?",
+                opciones: ["Adaptador Bluetooth", "Procesador", "Memoria RAM", "Disco Duro"],
+                respuesta: 0
+            },
+            {
+                pregunta: "¿Cuál es la función del bus del sistema?",
+                opciones: ["Procesar datos", "Comunicar componentes", "Almacenar información", "Mostrar imágenes"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Qué componente es necesario para la conexión HDMI?",
+                opciones: ["Procesador", "Memoria RAM", "Puerto HDMI", "Disco Duro"],
+                respuesta: 2
+            },
+            {
+                pregunta: "¿Cuál es la función del controlador de memoria?",
+                opciones: ["Procesar datos", "Gestionar la memoria RAM", "Almacenar información", "Mostrar imágenes"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Qué componente es necesario para la conexión Ethernet?",
+                opciones: ["Puerto Ethernet", "Procesador", "Memoria RAM", "Disco Duro"],
+                respuesta: 0
+            },
+            {
+                pregunta: "¿Cuál es la función del regulador de voltaje?",
+                opciones: ["Procesar datos", "Estabilizar el voltaje", "Almacenar información", "Mostrar imágenes"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Qué componente es necesario para la conexión SATA?",
+                opciones: ["Procesador", "Memoria RAM", "Puerto SATA", "Disco Duro"],
+                respuesta: 2
+            },
+            {
+                pregunta: "¿Cuál es la función del controlador de disco?",
+                opciones: ["Procesar datos", "Gestionar discos", "Almacenar información", "Mostrar imágenes"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Qué componente es necesario para la conexión PCIe?",
+                opciones: ["Procesador", "Memoria RAM", "Ranura PCIe", "Disco Duro"],
+                respuesta: 2
+            },
+            {
+                pregunta: "¿Cuál es la función del controlador de interrupciones?",
+                opciones: ["Procesar datos", "Gestionar interrupciones", "Almacenar información", "Mostrar imágenes"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Qué componente es necesario para la conexión DVI?",
+                opciones: ["Procesador", "Memoria RAM", "Puerto DVI", "Disco Duro"],
+                respuesta: 2
+            },
+            {
+                pregunta: "¿Cuál es la función del controlador de DMA?",
+                opciones: ["Procesar datos", "Gestionar transferencias", "Almacenar información", "Mostrar imágenes"],
+                respuesta: 1
+            },
+            {
+                pregunta: "¿Qué componente es necesario para la conexión DisplayPort?",
+                opciones: ["Procesador", "Memoria RAM", "Puerto DisplayPort", "Disco Duro"],
+                respuesta: 2
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Crear menú principal
+            const mainMenu = document.createElement('div');
+            mainMenu.className = 'main-menu';
+            mainMenu.innerHTML = `
+                <h1>Taller de Computadoras</h1>
+                <p>¡Aprende a armar una computadora paso a paso!</p>
+                <button class="menu-button" id="start-button">Comenzar</button>
+                <div class="menu-stats" style="display: none;">
+                    <p>Puntuación final: <span class="highlight">0</span></p>
+                    <p>Logros desbloqueados: <span class="highlight">0/4</span></p>
+                    <p>Componentes instalados: <span class="highlight">0/6</span></p>
+                </div>
+            `;
+            document.body.appendChild(mainMenu);
+
+            // Crear panel de instrucciones
+            const instructionsPanel = document.createElement('div');
+            instructionsPanel.className = 'instructions-panel';
+            instructionsPanel.innerHTML = `
+                <h3>Instrucciones</h3>
+                <ul>
+                    <li>Selecciona un componente de la pizarra</li>
+                    <li>Colócalo en el slot correspondiente del case</li>
+                    <li>Presiona ESC para cancelar la selección</li>
+                </ul>
+                <div class="score">
+                    Puntuación: <span class="score-value">${puntuacion}</span>
+                </div>
+            `;
+            document.body.appendChild(instructionsPanel);
+
+            // Crear panel de componente actual
+            const currentComponentPanel = document.createElement('div');
+            currentComponentPanel.className = 'current-component';
+            currentComponentPanel.innerHTML = `
+                <h3>Orden de Instalación</h3>
+                <div id="steps-container"></div>
+            `;
+            document.body.appendChild(currentComponentPanel);
+
+            // Crear panel de vidas
+            const livesPanel = document.createElement('div');
+            livesPanel.className = 'lives';
+            livesPanel.innerHTML = `
+                <h3>Vidas</h3>
+                <div class="lives-container">
+                    <div class="life"></div>
+                    <div class="life"></div>
+                    <div class="life"></div>
+                </div>
+            `;
+            document.body.appendChild(livesPanel);
+
+            // Crear menú de game over
+            const gameOverMenu = document.createElement('div');
+            gameOverMenu.className = 'game-over';
+            gameOverMenu.innerHTML = `
+                <h2>¡Game Over!</h2>
+                <p>Lo intentaste, pero se te acabaron las vidas.</p>
+                <p>Puntuación final: <span class="final-score">0</span></p>
+                <button class="restart-button">Reintentar</button>
+            `;
+            document.body.appendChild(gameOverMenu);
+
+            // Crear panel de logros
+            const achievementsPanel = document.createElement('div');
+            achievementsPanel.className = 'achievements';
+            achievementsPanel.innerHTML = `
+                <h3>Logros</h3>
+                <div id="achievements-container"></div>
+            `;
+            document.body.appendChild(achievementsPanel);
+
+            // Crear modal de quiz
+            const quizModal = document.createElement('div');
+            quizModal.className = 'quiz-modal';
+            quizModal.innerHTML = `
+                <h2>¡Oportunidad de Puntos Extra!</h2>
+                <div class="quiz-question"></div>
+                <div class="quiz-options"></div>
+                <div class="quiz-progress"></div>
+            `;
+            document.body.appendChild(quizModal);
+
+            // Ocultar elementos del juego inicialmente
+            document.querySelectorAll('.hud-message, .instructions-panel, .achievements, .lives, .current-component, .game-over, .quiz-modal').forEach(el => {
+                el.style.display = 'none';
+            });
+
+            // Agregar evento al botón de inicio
+            const startButton = document.getElementById('start-button');
+            startButton.addEventListener('click', iniciarJuego);
+
+            // Agregar evento al botón de reinicio
+            const restartButton = gameOverMenu.querySelector('.restart-button');
+            restartButton.addEventListener('click', reiniciarJuego);
+
+            // Inicializar pasos
+            actualizarPasos();
+
+            // Inicializar logros
+            actualizarLogros();
+        });
+
+        function iniciarJuego() {
+            juegoIniciado = true;
+            const mainMenu = document.querySelector('.main-menu');
+            mainMenu.style.display = 'none';
+
+            // Mostrar elementos del juego
+            document.querySelectorAll('.hud-message, .instructions-panel, .achievements, .lives, .current-component').forEach(el => {
+                el.style.display = 'block';
+            });
+
+            // Reiniciar variables
+            vidas = 3;
+            puntuacion = 0;
+            pasoActual = 0;
+            componenteSeleccionado = null;
+            boxSeleccionado = null;
+            logrosDesbloqueados.clear();
+            preguntaMostrada = false;
+
+            // Actualizar UI
+            actualizarVidas();
+            actualizarPuntuacion(0);
+            actualizarPasos();
+            actualizarLogros();
+
+            mostrarMensaje('¡Comienza la instalación!', '#00ff00', 3000);
+        }
+
+        function actualizarPasos() {
+            const container = document.getElementById('steps-container');
+            if (!container) return;
+
+            container.innerHTML = pasosInstalacion.map((paso, index) => `
+                <div class="step ${index === pasoActual ? 'active' : index < pasoActual ? 'completed' : ''}">
+                    ${index + 1}. ${paso.nombre}
+                </div>
+            `).join('');
+        }
+
+        function actualizarPuntuacion(puntos) {
+            puntuacion += puntos;
+            const scoreElement = document.querySelector('.score-value');
+            if (scoreElement) {
+                scoreElement.textContent = puntuacion;
+            }
+        }
+
+        function actualizarVidas() {
+            const lives = document.querySelectorAll('.life');
+            lives.forEach((life, index) => {
+                if (index < vidas) {
+                    life.classList.remove('lost');
+                } else {
+                    life.classList.add('lost');
+                }
+            });
+        }
+
+        function perderVida() {
+            vidas--;
+            actualizarVidas();
+            
+            if (vidas <= 0) {
+                mostrarGameOver();
+            } else {
+                mostrarMensaje(`❌ Te quedan ${vidas} vidas`, '#ff0000', 3000);
+            }
+        }
+
+        function mostrarGameOver() {
+            const gameOverMenu = document.querySelector('.game-over');
+            const finalScore = gameOverMenu.querySelector('.final-score');
+            finalScore.textContent = puntuacion;
+            gameOverMenu.style.display = 'block';
+
+            // Actualizar y mostrar menú principal
+            const mainMenu = document.querySelector('.main-menu');
+            const menuStats = mainMenu.querySelector('.menu-stats');
+            const startButton = mainMenu.querySelector('.menu-button');
+
+            menuStats.style.display = 'block';
+            menuStats.querySelector('p:nth-child(1) .highlight').textContent = puntuacion;
+            menuStats.querySelector('p:nth-child(2) .highlight').textContent = `${logrosDesbloqueados.size}/4`;
+            menuStats.querySelector('p:nth-child(3) .highlight').textContent = `${pasoActual}/6`;
+
+            startButton.textContent = 'Reintentar';
+            startButton.classList.add('restart');
+            mainMenu.style.display = 'block';
+        }
+
+        function reiniciarJuego() {
+            // Ocultar menú de game over
+            const gameOverMenu = document.querySelector('.game-over');
+            gameOverMenu.style.display = 'none';
+
+            // Ocultar menú principal
+            const mainMenu = document.querySelector('.main-menu');
+            mainMenu.style.display = 'none';
+
+            // Reiniciar variables
+            vidas = 3;
+            puntuacion = 0;
+            pasoActual = 0;
+            componenteSeleccionado = null;
+            boxSeleccionado = null;
+            logrosDesbloqueados.clear();
+            preguntaMostrada = false;
+
+            // Actualizar UI
+            actualizarVidas();
+            actualizarPuntuacion(0);
+            actualizarPasos();
+            actualizarLogros();
+
+            // Eliminar componentes colocados
+            document.querySelectorAll('.cpu-placed, .motherboard-placed, .ram-placed, .tarjetaGrafica-placed, .discoDuro-placed, .VentiladorProcesador-placed').forEach(el => {
+                if (el.parentNode) {
+                    el.parentNode.removeChild(el);
+                }
+            });
+
+            mostrarMensaje('¡Juego reiniciado!', '#00ff00', 3000);
+        }
+
+        function crearNuevoComponente(tipo) {
+            if (!juegoIniciado) return;
+            const pasoCorrecto = pasosInstalacion[pasoActual].id === tipo;
+            
+            if (!pasoCorrecto) {
+                mostrarMensaje(`❌ Debes instalar ${getNombreComponente(pasosInstalacion[pasoActual].id)} primero`, '#ff0000', 3000);
+                perderVida();
+                return;
+            }
+
+            console.log(`✅ Se ha creado un nuevo ${tipo}`);
+
+            // Eliminar componente previo si existe
+            const existingComponent = document.querySelector(`.${tipo}-placed`);
+            if (existingComponent) {
+                existingComponent.parentNode.removeChild(existingComponent);
+            }
+
+            // Crear nuevo componente
+            const nuevoComponente = document.createElement('a-entity');
+            nuevoComponente.setAttribute('class', `${tipo}-placed`);
+
+            // Configuración específica para cada tipo
+            const configuraciones = {
+                'cpu': {
+                    position: '3.091 0.885 5.734',
+                    scale: '0.003 0.003 0.003',
+                    rotation: '0 0 0',
+                    model: '#cpu-model',
+                    boxScale: '0.2 0.2 0.01'
+                },
+                'motherboard': {
+                    position: '3.091 0.885 5.734',
+                    scale: '0.025 0.020 0.025',
+                    rotation: '0 0 0',
+                    model: '#motherboard-model',
+                    boxScale: '0.3 0.3 0.01'
+                },
+                'ram': {
+                    position: '3.091 0.885 5.734',
+                    scale: '0.025 0.280 0.170',
+                    rotation: '0 0 0',
+                    model: '#ram-model',
+                    boxScale: '0.2 0.3 0.01'
+                },
+                'tarjetaGrafica': {
+                    position: '3.091 0.885 5.734',
+                    scale: '0.360 0.251 0.170',
+                    rotation: '0 0 0',
+                    model: '#tarjetaGrafica-model',
+                    boxScale: '0.3 0.2 0.01'
+                },
+                'discoDuro': {
+                    position: '3.091 0.885 5.734',
+                    scale: '0.116 0.126 0.114',
+                    rotation: '0 0 0',
+                    model: '#discoDuro-model',
+                    boxScale: '0.2 0.2 0.01'
+                },
+                'VentiladorProcesador': {
+                    position: '3.091 0.885 5.734',
+                    scale: '0.001 0.001 0.001',
+                    rotation: '0 0 0',
+                    model: '#VentiladorProcesador-model',
+                    boxScale: '0.2 0.2 0.01'
+                }
+            };
+
+            const config = configuraciones[tipo];
+
+            // Aplicar configuración
+            nuevoComponente.setAttribute('position', config.position);
+            nuevoComponente.setAttribute('gltf-model', config.model);
+            nuevoComponente.setAttribute('scale', config.scale);
+            nuevoComponente.setAttribute('rotation', config.rotation);
+
+            // Capa interactiva
+            const box = document.createElement('a-box');
+            box.setAttribute('color', '#FF0000');
+            box.setAttribute('depth', '0.01');
+            box.setAttribute('width', config.boxScale.split(' ')[0]);
+            box.setAttribute('height', config.boxScale.split(' ')[1]);
+            box.setAttribute('position', '0 0 -0.005');
+            nuevoComponente.appendChild(box);
+
+            // Efecto hover
+            nuevoComponente.setAttribute('event-set__mouseenter', 'scale: 1.1 1.1 1.1;');
+            nuevoComponente.setAttribute('event-set__mouseleave', 'scale: 1 1 1;');
+
+            // Asignar ID única y tipo
+            nuevoComponente.setAttribute('id', `${tipo}-nueva`);
+            nuevoComponente.setAttribute('data-tipo', tipo);
+
+            document.querySelector('a-scene').appendChild(nuevoComponente);
+            componenteSeleccionado = nuevoComponente;
+        }
+
+        function mostrarMensaje(texto, color = '#00ff00', duracion = 2000) {
+            // Crear el elemento del mensaje
+            const mensaje = document.createElement('div');
+            mensaje.className = `hud-message ${color === '#00ff00' ? 'success' : 'error'}`;
+            mensaje.textContent = texto;
+            
+            // Agregar el mensaje al body
+            document.body.appendChild(mensaje);
+            
+            // Forzar un reflow para que la animación funcione
+            mensaje.offsetHeight;
+            
+            // Mostrar el mensaje con animación
+            mensaje.classList.add('show');
+            
+            // Ocultar y eliminar el mensaje después de la duración
+            setTimeout(() => {
+                mensaje.classList.remove('show');
+                setTimeout(() => {
+                    if (mensaje.parentNode) {
+                        mensaje.parentNode.removeChild(mensaje);
+                    }
+                }, 300);
+            }, duracion);
+        }
+
+        function getNombreComponente(tipo) {
+            const nombres = {
+                'cpu': 'Procesador',
+                'motherboard': 'Placa Madre',
+                'ram': 'Memoria RAM',
+                'tarjetaGrafica': 'Tarjeta Gráfica',
+                'discoDuro': 'Disco Duro',
+                'VentiladorProcesador': 'Ventilador del Procesador'
+            };
+            return nombres[tipo] || tipo;
+        }
+
+        function actualizarLogros() {
+            const container = document.getElementById('achievements-container');
+            if (!container) return;
+
+            container.innerHTML = logros.map(logro => `
+                <div class="achievement ${logrosDesbloqueados.has(logro.id) ? 'unlocked' : ''}">
+                    ${logro.nombre}: ${logro.descripcion}
+                </div>
+            `).join('');
+        }
+
+        function desbloquearLogro(id) {
+            if (!logrosDesbloqueados.has(id)) {
+                logrosDesbloqueados.add(id);
+                actualizarLogros();
+                mostrarMensaje(`🏆 ¡Logro desbloqueado: ${logros.find(l => l.id === id).nombre}!`, '#ffd700', 3000);
+                actualizarPuntuacion(20); // Bonus por logro
+            }
+        }
+
+        function unirComponentes() {
+            if (!juegoIniciado) return;
+            if (componenteSeleccionado && boxSeleccionado) {
+                const tipoComponente = componenteSeleccionado.getAttribute('data-tipo');
+                const tipoBox = boxSeleccionado.getAttribute('data-tipo');
+
+                if (tipoComponente === tipoBox) {
+                    const pasoCorrecto = pasosInstalacion[pasoActual].id === tipoComponente;
+                    
+                    if (pasoCorrecto) {
+                        // Posiciones específicas para cada tipo de componente
+                        const posiciones = {
+                            'cpu': '4.380 1.558 3.832',
+                            'motherboard': '4.710 1.079 3.799',
+                            'ram': '4.411 1.640 4.116',
+                            'tarjetaGrafica': '4.069 1.167 3.839',
+                            'discoDuro': '4.396 0.967 3.689',
+                            'VentiladorProcesador': '4.183 1.481 3.871'
+                        };
+
+                        // Rotaciones específicas para cada tipo
+                        const rotaciones = {
+                            'cpu': '90 -90 0',
+                            'motherboard': '90 0 90',
+                            'ram': '90 -90 0',
+                            'tarjetaGrafica': '90 90 0',
+                            'discoDuro': '180 0 180',
+                            'VentiladorProcesador': '0 90 0'
+                        };
+
+                        // Escalas específicas para cada tipo
+                        const escalas = {
+                            'cpu': '0.001 0.001 0.001',
+                            'motherboard': '0.040 0.020 0.035',
+                            'ram': '0.085 0.290 0.110',
+                            'tarjetaGrafica': '0.170 0.251 0.170',
+                            'discoDuro': '0.116 0.126 0.114',
+                            'VentiladorProcesador': '0.001 0.001 0.001'
+                        };
+
+                        // Animación de transición
+                        componenteSeleccionado.setAttribute('animation__position', {
+                            property: 'position',
+                            to: posiciones[tipoComponente],
+                            dur: 1000,
+                            easing: 'easeInOutQuad'
+                        });
+
+                        componenteSeleccionado.setAttribute('animation__rotation', {
+                            property: 'rotation',
+                            to: rotaciones[tipoComponente],
+                            dur: 1000,
+                            easing: 'easeInOutQuad'
+                        });
+
+                        componenteSeleccionado.setAttribute('animation__scale', {
+                            property: 'scale',
+                            to: escalas[tipoComponente],
+                            dur: 1000,
+                            easing: 'easeInOutQuad'
+                        });
+
+                        // Esperar a que termine la animación antes de mostrar el mensaje y eliminar el box
+                        setTimeout(() => {
+                            mostrarMensaje(`✅ ${getNombreComponente(tipoComponente)} instalado correctamente (+10 puntos)`, '#00ff00', 3000);
+                            actualizarPuntuacion(10);
+                            
+                            // Desbloquear logros
+                            if (pasoActual === 0) {
+                                desbloquearLogro('primer_componente');
+                            }
+                            if (pasoActual === pasosInstalacion.length - 1) {
+                                desbloquearLogro('todos_componentes');
+                                if (vidas === 3) {
+                                    desbloquearLogro('sin_errores');
+                                }
+                            }
+
+                            if (boxSeleccionado && boxSeleccionado.parentNode) {
+                                boxSeleccionado.parentNode.removeChild(boxSeleccionado);
+                            }
+                            
+                            pasoActual++;
+                            actualizarPasos();
+                            
+                            // Mostrar una sola pregunta aleatoria durante la instalación
+                            if (!preguntaMostrada && pasoActual < pasosInstalacion.length) {
+                                const mostrarPregunta = Math.random() < 0.3; // 30% de probabilidad de mostrar la pregunta
+                                if (mostrarPregunta) {
+                                    setTimeout(() => {
+                                        mostrarQuiz();
+                                        preguntaMostrada = true;
+                                    }, 2000);
+                                }
+                            } else if (pasoActual >= pasosInstalacion.length) {
+                                mostrarMensaje('🎉 ¡Felicidades! Has completado la instalación (+50 puntos)', '#00ff00', 5000);
+                                actualizarPuntuacion(50);
+                            }
+                        }, 1000);
+                    } else {
+                        mostrarMensaje(`❌ Debes instalar ${getNombreComponente(pasosInstalacion[pasoActual].id)} primero (-5 puntos)`, '#ff0000', 3000);
+                        actualizarPuntuacion(-5);
+                        perderVida();
+                    }
+                } else {
+                    mostrarMensaje(`❌ No se puede instalar ${getNombreComponente(tipoComponente)} en este slot (-5 puntos)`, '#ff0000', 3000);
+                    actualizarPuntuacion(-5);
+                    perderVida();
+                }
+                
+                componenteSeleccionado = null;
+                boxSeleccionado = null;
+            }
+        }
+
+        function mostrarQuiz() {
+            const quizModal = document.querySelector('.quiz-modal');
+            const questionDiv = quizModal.querySelector('.quiz-question');
+            const optionsDiv = quizModal.querySelector('.quiz-options');
+            const progressDiv = quizModal.querySelector('.quiz-progress');
+
+            // Seleccionar pregunta aleatoria
+            const pregunta = preguntas[Math.floor(Math.random() * preguntas.length)];
+            
+            questionDiv.textContent = pregunta.pregunta;
+            optionsDiv.innerHTML = pregunta.opciones.map((opcion, index) => `
+                <button class="quiz-option" data-index="${index}">${opcion}</button>
+            `).join('');
+
+            progressDiv.textContent = '¡Oportunidad de puntos extra!';
+
+            // Agregar eventos a los botones
+            optionsDiv.querySelectorAll('.quiz-option').forEach(button => {
+                button.addEventListener('click', () => {
+                    const selectedIndex = parseInt(button.dataset.index);
+                    if (selectedIndex === pregunta.respuesta) {
+                        button.classList.add('correct');
+                        actualizarPuntuacion(20);
+                        mostrarMensaje('✅ ¡Respuesta correcta! (+20 puntos)', '#00ff00', 2000);
+                    } else {
+                        button.classList.add('incorrect');
+                        mostrarMensaje('❌ Respuesta incorrecta', '#ff0000', 2000);
+                    }
+
+                    // Deshabilitar todos los botones
+                    optionsDiv.querySelectorAll('.quiz-option').forEach(btn => {
+                        btn.disabled = true;
+                    });
+
+                    // Cerrar el quiz después de 2 segundos
+                    setTimeout(() => {
+                        quizModal.style.display = 'none';
+                    }, 2000);
+                });
+            });
+
+            quizModal.style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const cursor = document.querySelector('#cursor');
+            cursor.setAttribute('raycaster', 'objects: #cpu, #motherboard, #ram, #tarjetaGrafica, #discoDuro, #VentiladorProcesador, .cpu-placed, .motherboard-placed, .ram-placed, .tarjetaGrafica-placed, .discoDuro-placed, .VentiladorProcesador-placed, #case-cpu-slot, #case-motherboard-slot, #case-ram-slot, #case-tarjetaGrafica-slot, #case-discoDuro-slot, #case-ventilador-slot');
+
+            // Configurar los boxes del case
+            const caseBoxes = {
+                'case-cpu-slot': { tipo: 'cpu', color: '#FFD700' },
+                'case-motherboard-slot': { tipo: 'motherboard', color: '#ff7800' },
+                'case-ram-slot': { tipo: 'ram', color: '#9141ac' },
+                'case-tarjetaGrafica-slot': { tipo: 'tarjetaGrafica', color: '#1c71d8' },
+                'case-discoDuro-slot': { tipo: 'discoDuro', color: '#2ec27e' },
+                'case-ventilador-slot': { tipo: 'VentiladorProcesador', color: '#ed333b' }
+            };
+
+            Object.entries(caseBoxes).forEach(([id, config]) => {
+                const box = document.querySelector(`#${id}`);
+                if (box) {
+                    box.setAttribute('data-tipo', config.tipo);
+                    box.setAttribute('color', config.color);
+                    box.setAttribute('opacity', '0.4');
+                }
+            });
+
+            // Detectar clics
+            cursor.addEventListener('click', function (e) {
+                const intersection = e.detail.intersection;
+                if (!intersection) return;
+
+                const clickedObject = intersection.object.el;
+                const id = clickedObject.getAttribute('id');
+
+                // Crear nuevos componentes
+                if (id === 'cpu') {
+                    crearNuevoComponente('cpu');
+                    mostrarMensaje('✅ Se creó un nuevo Procesador', '#00ff00');
+                }
+                else if (id === 'motherboard') {
+                    crearNuevoComponente('motherboard');
+                    mostrarMensaje('✅ Se creó una nueva Placa Madre', '#00ff00');
+                }
+                else if (id === 'ram') {
+                    crearNuevoComponente('ram');
+                    mostrarMensaje('✅ Se creó una nueva Memoria RAM', '#00ff00');
+                }
+                else if (id === 'tarjetaGrafica') {
+                    crearNuevoComponente('tarjetaGrafica');
+                    mostrarMensaje('✅ Se creó una nueva Tarjeta Gráfica', '#00ff00');
+                }
+                else if (id === 'discoDuro') {
+                    crearNuevoComponente('discoDuro');
+                    mostrarMensaje('✅ Se creó un nuevo Disco Duro', '#00ff00');
+                }
+                else if (id === 'VentiladorProcesador') {
+                    crearNuevoComponente('VentiladorProcesador');
+                    mostrarMensaje('✅ Se creó un nuevo Ventilador', '#00ff00');
+                }
+                
+                // Seleccionar componentes colocados
+                else if (clickedObject.classList.contains('cpu-placed') ||
+                         clickedObject.classList.contains('motherboard-placed') ||
+                         clickedObject.classList.contains('ram-placed') ||
+                         clickedObject.classList.contains('tarjetaGrafica-placed') ||
+                         clickedObject.classList.contains('discoDuro-placed') ||
+                         clickedObject.classList.contains('VentiladorProcesador-placed')) {
+                    componenteSeleccionado = clickedObject;
+                    const tipo = clickedObject.getAttribute('data-tipo');
+                    mostrarMensaje(`✅ Se seleccionó: ${getNombreComponente(tipo)}`, '#00ff00');
+                }
+                
+                // Seleccionar slots del case
+                else if (id.startsWith('case-') && id.endsWith('-slot')) {
+                    boxSeleccionado = clickedObject;
+                    const tipo = clickedObject.getAttribute('data-tipo');
+                    mostrarMensaje(`✅ Se seleccionó el slot para: ${getNombreComponente(tipo)}`, '#00ff00');
+                    unirComponentes();
+                }
+            });
+
+            // Capturar tecla Escape para cancelar selección
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    if (componenteSeleccionado || boxSeleccionado) {
+                        componenteSeleccionado = null;
+                        boxSeleccionado = null;
+                        mostrarMensaje('❌ Selección cancelada', '#ff0000');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

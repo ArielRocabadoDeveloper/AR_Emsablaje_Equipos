@@ -1,0 +1,11 @@
+Model Information:
+* title:	oficina texture demo 2
+* source:	https://sketchfab.com/3d-models/oficina-texture-demo-2-35fab906c23a438982781c7a6ed1e74d
+* author:	delta9sio30 (https://sketchfab.com/delta9sio30)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "oficina texture demo 2" (https://sketchfab.com/3d-models/oficina-texture-demo-2-35fab906c23a438982781c7a6ed1e74d) by delta9sio30 (https://sketchfab.com/delta9sio30) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

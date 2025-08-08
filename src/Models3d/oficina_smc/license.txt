@@ -1,0 +1,11 @@
+Model Information:
+* title:	Oficina SMC
+* source:	https://sketchfab.com/3d-models/oficina-smc-c2e32f590d414d2c9e566435fc40359b
+* author:	Lucas Otto Klug (https://sketchfab.com/lucasottoklug)
+
+Model License:
+* license type:	CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)
+* requirements:	Author must be credited. No commercial use. Modified versions must have the same license.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Oficina SMC" (https://sketchfab.com/3d-models/oficina-smc-c2e32f590d414d2c9e566435fc40359b) by Lucas Otto Klug (https://sketchfab.com/lucasottoklug) licensed under CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)

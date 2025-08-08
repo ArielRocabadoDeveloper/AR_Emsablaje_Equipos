@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "aframe": "^1.7.1"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}

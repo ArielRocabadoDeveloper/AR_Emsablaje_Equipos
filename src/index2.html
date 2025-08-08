@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Cursor Natural</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js "></script>
+    <style>
+      body { margin: 0; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <a-scene>
+
+      <!-- Cámara + Controles -->
+      <a-entity camera look-controls wasd-controls position="0 1.6 3">
+        <!-- Cursor personalizado estilo mouse -->
+        <a-entity
+          id="cursor"
+          cursor="rayOrigin: mouse; fuse: false;"
+          position="0 0 -1"
+          geometry="primitive: ring; radiusInner: 0.015; radiusOuter: 0.025"
+          material="color: #000000; opacity: 0.7;"
+        >
+          <!-- Efecto de hover -->
+          <a-animation
+            attribute="scale"
+            from="1 1 1"
+            to="1.2 1.2 1.2"
+            dur="150"
+            direction="alternate"
+            repeat="indefinite"
+          ></a-animation>
+        </a-entity>
+      </a-entity>
+
+      <!-- Caja roja que responde al click -->
+      <a-box
+        color="red"
+        position="0 1.5 -3"
+        animation__move="property: position; from: 0 1.5 -3; to: 0 2.5 -3; dur: 1000; startEvents: click"
+        animation__rotate="property: rotation; from: 0 0 0; to: 0 360 0; dur: 1000; startEvents: click"
+      ></a-box>
+
+      <!-- Piso para evitar caídas -->
+      <a-plane position="0 0 -4" rotation="-90 0 0" width="10" height="10" color="#cccccc"></a-plane>
+
+      <!-- Script -->
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const cursor = document.querySelector('#cursor');
+          cursor.setAttribute('raycaster', 'objects: .boton');
+
+          // Detectar clic en la caja roja
+          cursor.addEventListener('click', function (e) {
+            const intersection = e.detail.intersection;
+            if (!intersection) return;
+
+            const clickedObject = intersection.object.el;
+            if (!clickedObject || !clickedObject.classList.contains('boton')) return;
+
+            mostrarMenu();
+          });
+
+          function mostrarMenu() {
+            // Eliminar menú anterior si existe
+            const oldMenu = document.querySelector('#menu');
+            if (oldMenu) oldMenu.parentNode.removeChild(oldMenu);
+
+            // Crear menú principal
+            const menu = document.createElement('a-entity');
+            menu.setAttribute('id', 'menu');
+            menu.setAttribute('position', '0 2.5 -2'); // Frente a la caja roja
+            menu.setAttribute('rotation', '0 0 0');
+
+            // Fondo con borde redondeado y transparencia
+            const background = document.createElement('a-plane');
+            background.setAttribute('width', '2');
+            background.setAttribute('height', '1.5');
+            background.setAttribute('color', '#ffffff');
+            background.setAttribute('opacity', '0.9');
+            background.setAttribute('radius', '0.1');
+            background.setAttribute('position', '0 0 0.01');
+            background.setAttribute('cast-shadow', 'true');
+            background.setAttribute('receive-shadow', 'true');
+            menu.appendChild(background);
+
+            // Título
+            const titleText = document.createElement('a-text');
+            titleText.setAttribute('value', 'Selecciona una figura');
+            titleText.setAttribute('color', '#000000');
+            titleText.setAttribute('align', 'center');
+            titleText.setAttribute('position', '0 0.6 -0.01');
+            titleText.setAttribute('font-size', '30');
+            menu.appendChild(titleText);
+
+            // Opciones
+            const figuras = [
+              { nombre: "Triángulo", forma: "triangle" },
+              { nombre: "Círculo", forma: "circle" },
+              { nombre: "Cuadrado", forma: "box" }
+            ];
+
+            let offsetY = 0.3;
+            figuras.forEach(figura => {
+              const opcion = document.createElement('a-entity');
+              opcion.setAttribute('class', 'opcion-menu');
+              opcion.setAttribute('position', `0 ${offsetY} 0`);
+              opcion.setAttribute('scale', '1 1 1');
+
+              // Cuadrado visual
+              const box = document.createElement('a-box');
+              box.setAttribute('color', '#FF0000');
+              box.setAttribute('depth', '0.01');
+              box.setAttribute('width', '0.4');
+              box.setAttribute('height', '0.4');
+              box.setAttribute('position', '-0.2 0 -0.01');
+              box.setAttribute('material', 'transparent: true; opacity: 0.8;');
+              box.setAttribute('event-set__mouseenter', 'material.opacity: 1;');
+              box.setAttribute('event-set__mouseleave', 'material.opacity: 0.8;');
+              box.setAttribute('event-set__click', `_target: null; run: crearFigura('${figura.forma}');`);
+
+              // Texto con nombre
+              const text = document.createElement('a-text');
+              text.setAttribute('value', figura.nombre);
+              text.setAttribute('color', '#000000');
+              text.setAttribute('align', 'center');
+              text.setAttribute('position', '0 0.15 -0.01');
+              text.setAttribute('font-size', '25');
+
+              // Agregar elementos
+              opcion.appendChild(box);
+              opcion.appendChild(text);
+              menu.appendChild(opcion);
+              offsetY -= 0.4;
+            });
+
+            document.querySelector('a-scene').appendChild(menu);
+          }
+
+          // Función para crear figura según la opción seleccionada
+          function crearFigura(tipo) {
+            console.log(`✅ Éxito: Seleccionaste "${tipo}"`);
+
+            // Eliminar cualquier figura previa
+            const existingFigure = document.querySelector('.figura-placed');
+            if (existingFigure) {
+              existingFigure.parentNode.removeChild(existingFigure);
+            }
+
+            // Crear nueva figura
+            const nuevaFigura = document.createElement('a-entity');
+            nuevaFigura.setAttribute('class', 'figura-placed');
+            nuevaFigura.setAttribute('position', '0 1.5 -3'); // Posición sobre la caja original
+
+            switch (tipo) {
+              case 'triangle':
+                nuevaFigura.setAttribute('geometry', 'primitive: triangle; radius: 0.5;');
+                break;
+              case 'circle':
+                nuevaFigura.setAttribute('geometry', 'primitive: circle; radius: 0.5;');
+                break;
+              case 'box':
+                nuevaFigura.setAttribute('geometry', 'primitive: box; depth: 0.01;');
+                break;
+            }
+
+            nuevaFigura.setAttribute('material', 'color: #0000FF; metalness: 0.3; roughness: 0.5;');
+            nuevaFigura.setAttribute('rotation', '0 0 0');
+
+            // Hover efecto
+            nuevaFigura.setAttribute('event-set__mouseenter', 'scale: 1.1 1.1 1.1;');
+            nuevaFigura.setAttribute('event-set__mouseleave', 'scale: 1 1 1;');
+
+            document.querySelector('a-scene').appendChild(nuevaFigura);
+          }
+
+          // Añadimos clase a la caja roja para detectar clics
+          const boton = document.querySelector('a-box');
+          boton.setAttribute('class', 'boton');
+        });
+      </script>
+
+    </a-scene>
+  </body>
+</html>

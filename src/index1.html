@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Cursor Ejemplo</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js "></script>
+  </head>
+  <body>
+    <a-scene>
+
+      <!-- Cámara con cursor -->
+      <a-entity camera look-controls position="0 1.6 3">
+        <a-entity cursor="rayOrigin: mouse" position="0 0 -1" geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+                  material="color: black; opacity: 0.5"></a-entity>
+      </a-entity>
+
+      <!-- Caja roja que se mueve y gira al hacer clic -->
+      <a-box
+        color="red"
+        position="0 1.5 -3"
+        animation__move="property: position; from: 0 1.5 -3; to: 0 2.5 -3; dur: 1000; startEvents: click"
+        animation__rotate="property: rotation; from: 0 0 0; to: 0 360 0; dur: 1000; startEvents: click"
+      ></a-box>
+
+    </a-scene>
+  </body>
+</html>
